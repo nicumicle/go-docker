@@ -7,6 +7,7 @@ import (
 
 type Docker struct {
 	Containers []Container
+	Search     string
 }
 
 func (d *Docker) InitContainers() error {
@@ -33,11 +34,18 @@ func (d *Docker) InitContainers() error {
 		containerIp = strings.Trim(containerIp, " ")
 		containerIp = strings.Replace(containerIp, " ", " - ", 1)
 
-		d.Containers = append(d.Containers, Container{
+		c := Container{
 			Name:   line_arr[0],
 			Status: iniStatusFromString(line_arr[1]),
 			IP:     containerIp,
-		})
+		}
+		// Filter by name
+		if !strings.Contains(strings.ToLower(c.Name), strings.ToLower(d.Search)) &&
+			!strings.Contains(c.IP, d.Search) {
+			continue
+		}
+
+		d.Containers = append(d.Containers, c)
 	}
 
 	return nil

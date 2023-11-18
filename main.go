@@ -24,22 +24,31 @@ infiniteLoop:
 			break
 		}
 
-		g.ListContainers(d.Containers)
+		g.ListContainers(d.Containers, d.Search)
 		g.Render()
-		//read option from command line
+
 		option := gui.ReadCommand("Please enter the container id:")
 
-		if option == "r" {
+		if option == gui.ActionClearSearch {
+			d.Search = ""
 			continue
 		}
-		if option == "q" {
+		if option == gui.ActionSearch {
+			d.Search = gui.ReadCommand("What are you searching for:")
+
+			continue
+		}
+		if option == gui.ActionRefresh {
+			continue
+		}
+		if option == gui.ActionQuit {
 			break
 		}
 
 		// Convert the selected container name to int
 		index, err := strconv.ParseInt(option, 10, 0)
 		if err != nil || index >= int64(len(d.Containers)) || (index < 0) {
-			gui.DisplayErrorAndWaitForEnter("Invalid container provided.")
+			g.Error = fmt.Errorf("invalid container provided. Index %d is invalid", index)
 			continue
 		}
 
@@ -51,46 +60,26 @@ infiniteLoop:
 		switch action {
 		case "S":
 			fmt.Println(colors.WriteYellow("Starting container.."))
-			err := selectedContainer.Start()
-			if err != nil {
-				gui.DisplayErrorAndWaitForEnter(err.Error())
-			}
+			g.Error = selectedContainer.Start()
 		case "s":
 			fmt.Println(colors.WriteYellow("Stopping container.."))
-			err := selectedContainer.Stop()
-			if err != nil {
-				gui.DisplayErrorAndWaitForEnter(err.Error())
-			}
+			g.Error = selectedContainer.Stop()
 		case "r":
 			fmt.Println(colors.WriteYellow("Restarting container.."))
-			err := selectedContainer.Restart()
-			if err != nil {
-				gui.DisplayErrorAndWaitForEnter(err.Error())
-			}
+			g.Error = selectedContainer.Restart()
 		case "p":
 			fmt.Println(colors.WriteYellow("Pausing container.."))
-			err := selectedContainer.Pause()
-			if err != nil {
-				gui.DisplayErrorAndWaitForEnter(err.Error())
-			}
+			g.Error = selectedContainer.Pause()
 		case "u":
 			fmt.Println(colors.WriteYellow("Unpausing container.."))
-			err := selectedContainer.UnPause()
-			if err != nil {
-				gui.DisplayErrorAndWaitForEnter(err.Error())
-			}
+			g.Error = selectedContainer.UnPause()
 		case "c":
 			shell := gui.ReadCommand("Please select the shell [default /bin/bash]:")
-
-			fmt.Println("selected shell: ", shell)
-			err := selectedContainer.ConnectToContainer(shell)
-			if err != nil {
-				gui.DisplayErrorAndWaitForEnter(err.Error())
-			}
+			g.Error = selectedContainer.ConnectToContainer(shell)
 		case "l":
 			logs, err := selectedContainer.ShowLogs()
 			if err != nil {
-				gui.DisplayErrorAndWaitForEnter(err.Error())
+				g.Error = err
 
 				continue
 			}
@@ -98,9 +87,10 @@ infiniteLoop:
 			gui.PressEnterToContinue("")
 		case "d":
 			confirm := gui.ReadCommand(
-				"Are you sure you want to delete " +
-					colors.WriteYellow(selectedContainer.Name) +
-					" container? [y/n]",
+				fmt.Sprintf(
+					"Are you sure you want to delete the %s container? [y/n]",
+					colors.WriteYellow(selectedContainer.Name),
+				),
 			)
 			if strings.Contains(confirm, "q") {
 				break infiniteLoop
@@ -109,9 +99,8 @@ infiniteLoop:
 				continue
 			}
 
-			err = selectedContainer.Delete()
-			if err != nil {
-				gui.DisplayErrorAndWaitForEnter(err.Error())
+			if err = selectedContainer.Delete(); err != nil {
+				g.Error = err
 			} else {
 				fmt.Println(colors.WriteGreen("Container has been deleted."))
 			}
@@ -123,7 +112,7 @@ infiniteLoop:
 		case "q":
 			break infiniteLoop
 		default:
-			gui.DisplayErrorAndWaitForEnter("Invalid action provided")
+			g.Error = fmt.Errorf("%s is not a valid action", action)
 		}
 	}
 

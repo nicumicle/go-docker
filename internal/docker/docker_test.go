@@ -38,6 +38,7 @@ func TestIniStatusFromString(t *testing.T) {
 	}
 
 	for tname, tc := range tt {
+		tc := tc
 		t.Run(tname, func(t *testing.T) {
 			t.Parallel()
 			result := iniStatusFromString(tc.status)

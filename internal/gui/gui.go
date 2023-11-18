@@ -11,11 +11,28 @@ import (
 
 type Gui struct {
 	output string
+	Error  error
 }
 
-func (g *Gui) ListContainers(c []docker.Container) {
+const (
+	ActionSearch      = "s"
+	ActionClearSearch = "cs"
+	ActionRefresh     = "r"
+	ActionQuit        = "q"
+)
+
+func (g *Gui) ListContainers(c []docker.Container, search string) {
 	Clear()
-	g.output = colors.WriteBlue("Available Containers:") + "\n"
+	g.output = ""
+	if g.Error != nil {
+		g.output += colors.WriteRed("Error: "+g.Error.Error()) + "\n"
+		g.Error = nil
+	}
+
+	g.output += colors.WriteBlue("Available Containers:") + "\n"
+	if search != "" {
+		g.output += colors.WriteGray("Searching by "+colors.WriteBlue(search)) + "\n"
+	}
 	g.output += fmt.Sprintf("%3s | %8s | %50s | %10s\n", "ID", "STATUS", "CONTAINER NAME", "IP")
 	g.output += fmt.Sprintln(strings.Repeat("-", 90))
 
@@ -31,8 +48,12 @@ func (g *Gui) ListContainers(c []docker.Container) {
 	}
 
 	g.output += fmt.Sprintln()
-	g.output += fmt.Sprintln("Type", colors.WriteYellow("r"), "for refresh.")
-	g.output += fmt.Sprintln("Type", colors.WriteYellow("q"), "to exit.")
+	g.output += fmt.Sprintln("Type", colors.WriteYellow(ActionSearch), "to search.")
+	if search != "" {
+		g.output += fmt.Sprintln("Type", colors.WriteYellow(ActionClearSearch), "to clear the search.")
+	}
+	g.output += fmt.Sprintln("Type", colors.WriteYellow(ActionRefresh), "to refresh the list.")
+	g.output += fmt.Sprintln("Type", colors.WriteYellow(ActionQuit), "to exit.")
 }
 
 // ListActions Display the screen where we can choose actions for our selected container

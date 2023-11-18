@@ -1,4 +1,7 @@
 # Go-Docker
+[![Go Report Card](https://goreportcard.com/badge/github.com/hellofresh/health-go)](https://goreportcard.com/report/github.com/nicumicle/go-docker)
+[![CICD](https://github.com/nicumicle/go-docker/actions/workflows/ci-cd.yaml/badge.svg)](https://github.com/nicumicle/go-docker/actions/workflows/ci-cd.yaml)
+[![GitHub License](https://img.shields.io/github/license/nicumicle/go-docker)](https://github.com/nicumicle/go-docker/blob/main/LICENSE)
 
 Go-Docker is a Golang application designed for an efficient Docker container management.
 
