@@ -22,7 +22,6 @@ const (
 )
 
 func (g *Gui) ListContainers(c []docker.Container, search string) {
-	Clear()
 	g.output = ""
 	if g.Error != nil {
 		g.output += colors.WriteRed("Error: "+g.Error.Error()) + "\n"
@@ -58,17 +57,28 @@ func (g *Gui) ListContainers(c []docker.Container, search string) {
 
 // ListActions Display the screen where we can choose actions for our selected container
 func (g *Gui) ListActions(c docker.Container) {
-	Clear()
-	g.output = fmt.Sprintln("You have entered selected: ", colors.WriteYellow(c.GetName()), colors.WriteBlue(c.GetIp()))
+	g.output = fmt.Sprintln("You have entered selected: ", colors.WriteYellow(c.GetName()))
+	g.output += fmt.Sprintln("Status", iniStatusColorFromString(c.GetStatus()))
+	g.output += fmt.Sprintln("IP: ", colors.WriteGray(c.GetIp()))
+	g.output += fmt.Sprintln("Ports:", colors.WriteGray(c.GetPortDetails()))
+	g.output += "\n"
 	g.output += fmt.Sprintln("Options:")
-	g.output += fmt.Sprintln("\t[", colors.WriteYellow("S"), "] Start")
-	g.output += fmt.Sprintln("\t[", colors.WriteYellow("s"), "] Stop")
-	g.output += fmt.Sprintln("\t[", colors.WriteYellow("r"), "] Restart")
-	g.output += fmt.Sprintln("\t[", colors.WriteYellow("p"), "] Pause")
-	g.output += fmt.Sprintln("\t[", colors.WriteYellow("u"), "] Unpause")
-	g.output += fmt.Sprintln("\t", strings.Repeat("-", 16))
-	g.output += fmt.Sprintln("\t[", colors.WriteYellow("c"), "] Connect")
-	g.output += fmt.Sprintln("\t[", colors.WriteYellow("l"), "] Show logs")
+	switch c.GetStatus() {
+	case string(docker.StatusUp):
+		g.output += fmt.Sprintln("\t[", colors.WriteYellow("s"), "] Stop")
+		g.output += fmt.Sprintln("\t[", colors.WriteYellow("r"), "] Restart")
+		g.output += fmt.Sprintln("\t[", colors.WriteYellow("p"), "] Pause")
+		g.output += fmt.Sprintln("\t", strings.Repeat("-", 16))
+		g.output += fmt.Sprintln("\t[", colors.WriteYellow("c"), "] Connect")
+		g.output += fmt.Sprintln("\t[", colors.WriteYellow("l"), "] Show logs")
+	case string(docker.StatusStopped):
+		g.output += fmt.Sprintln("\t[", colors.WriteYellow("S"), "] Start")
+	case string(docker.StatusPaused):
+		g.output += fmt.Sprintln("\t[", colors.WriteYellow("u"), "] Unpause")
+	case string(docker.StatusRestarting):
+	case string(docker.StatusUnknown):
+	}
+
 	g.output += fmt.Sprintln("\t[", colors.WriteYellow("d"), "] Delete")
 	g.output += fmt.Sprintln("\t", strings.Repeat("-", 16))
 	g.output += fmt.Sprintln("\t[", colors.WriteRed("b"), "] Go back")

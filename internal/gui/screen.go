@@ -9,7 +9,7 @@ import (
 	"github.com/nicumicle/go-docker/pkg/colors"
 )
 
-func Clear() {
+func ClearScreen() {
 	//clear the screen
 	fmt.Printf("\x1b[2J") //from top
 

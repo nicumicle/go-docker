@@ -24,6 +24,7 @@ infiniteLoop:
 			break
 		}
 
+		gui.ClearScreen()
 		g.ListContainers(d.Containers, d.Search)
 		g.Render()
 
@@ -53,6 +54,7 @@ infiniteLoop:
 		}
 
 		selectedContainer := d.Containers[index]
+		gui.ClearScreen()
 		g.ListActions(selectedContainer)
 		g.Render()
 		action := gui.ReadCommand("Please select your action:")

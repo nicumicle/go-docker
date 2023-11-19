@@ -1,6 +1,7 @@
 package docker
 
 import (
+	"encoding/json"
 	"os/exec"
 	"strings"
 )
@@ -11,7 +12,7 @@ type Docker struct {
 }
 
 func (d *Docker) InitContainers() error {
-	cmd := exec.Command("docker", "container", "ls", "--all", "--format", "{{.Names}}###{{.Status}}###{{.}}")
+	cmd := exec.Command("docker", "container", "ls", "--all", "--format", "{{json .}}")
 	out, err := cmd.Output()
 
 	if err != nil {
@@ -20,28 +21,23 @@ func (d *Docker) InitContainers() error {
 
 	//Split the string into an array based on newline
 	arr := strings.Split(string(out), "\n")
-	for i := range arr {
-		oneline := strings.Trim(arr[i], "'")
-
-		line_arr := strings.Split(oneline, "###")
-		if len(line_arr) < 2 {
+	for _, line := range arr {
+		var c Container
+		e := json.Unmarshal([]byte(line), &c)
+		if e != nil {
 			continue
 		}
-		cmd := exec.Command("docker", "inspect", "-f", "{{range.NetworkSettings.Networks}} {{.IPAddress}}{{end}}", line_arr[0])
+		c.Status = iniStatusFromString(c.InternalStatus)
+
+		// Inspect container to get more details
+		cmd := exec.Command("docker", "inspect", "-f", "{{json .}}", c.GetName())
 		out, _ := cmd.Output()
 
-		containerIp := strings.Trim(string(out), "\n")
-		containerIp = strings.Trim(containerIp, " ")
-		containerIp = strings.Replace(containerIp, " ", " - ", 1)
+		_ = json.Unmarshal(out, &c.Details)
 
-		c := Container{
-			Name:   line_arr[0],
-			Status: iniStatusFromString(line_arr[1]),
-			IP:     containerIp,
-		}
 		// Filter by name
-		if !strings.Contains(strings.ToLower(c.Name), strings.ToLower(d.Search)) &&
-			!strings.Contains(c.IP, d.Search) {
+		if !strings.Contains(strings.ToLower(c.GetName()), strings.ToLower(d.Search)) &&
+			!strings.Contains(c.GetIp(), d.Search) {
 			continue
 		}
 
@@ -66,6 +62,9 @@ func iniStatusFromString(status string) Status {
 
 	if strings.Contains(status, "Exited") {
 		return StatusStopped
+	}
+	if strings.Contains(status, "Restarting") {
+		return StatusRestarting
 	}
 
 	return StatusUnknown
