@@ -30,7 +30,7 @@ func (g *Gui) ListContainers(c []docker.Container, search string) {
 
 	g.output += colors.WriteBlue("Available Containers:") + "\n"
 	if search != "" {
-		g.output += colors.WriteGray("Searching by "+colors.WriteBlue(search)) + "\n"
+		g.output += colors.WriteGray(fmt.Sprintf("Searching by \"%s\":", colors.WriteBlue(search))) + "\n"
 	}
 	g.output += fmt.Sprintf("%3s | %8s | %50s | %10s\n", "ID", "STATUS", "CONTAINER NAME", "IP")
 	g.output += fmt.Sprintln(strings.Repeat("-", 90))
