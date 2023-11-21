@@ -28,7 +28,7 @@ infiniteLoop:
 		g.ListContainers(d.Containers, d.Search)
 		g.Render()
 
-		option := gui.ReadCommand("Please enter the container id:")
+		option := gui.ReadCommand("Please enter your choice:")
 
 		if option == gui.ActionClearSearch {
 			d.Search = ""
@@ -61,19 +61,19 @@ infiniteLoop:
 
 		switch action {
 		case "S":
-			fmt.Println(colors.WriteYellow("Starting container.."))
+			fmt.Println(colors.WriteYellow("Starting container..."))
 			g.Error = selectedContainer.Start()
 		case "s":
-			fmt.Println(colors.WriteYellow("Stopping container.."))
+			fmt.Println(colors.WriteYellow("Stopping container..."))
 			g.Error = selectedContainer.Stop()
 		case "r":
-			fmt.Println(colors.WriteYellow("Restarting container.."))
+			fmt.Println(colors.WriteYellow("Restarting container..."))
 			g.Error = selectedContainer.Restart()
 		case "p":
-			fmt.Println(colors.WriteYellow("Pausing container.."))
+			fmt.Println(colors.WriteYellow("Pausing container..."))
 			g.Error = selectedContainer.Pause()
 		case "u":
-			fmt.Println(colors.WriteYellow("Unpausing container.."))
+			fmt.Println(colors.WriteYellow("Un-pausing container..."))
 			g.Error = selectedContainer.UnPause()
 		case "c":
 			shell := gui.ReadCommand("Please select the shell [default /bin/bash]:")
@@ -94,10 +94,10 @@ infiniteLoop:
 					colors.WriteYellow(selectedContainer.Name),
 				),
 			)
-			if strings.Contains(confirm, "q") {
+			if strings.Contains(strings.ToLower(confirm), "q") {
 				break infiniteLoop
 			}
-			if !strings.Contains(confirm, "y") {
+			if !strings.Contains(strings.ToLower(confirm), "y") {
 				continue
 			}
 

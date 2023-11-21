@@ -32,7 +32,7 @@ func (g *Gui) ListContainers(c []docker.Container, search string) {
 	if search != "" {
 		g.output += colors.WriteGray(fmt.Sprintf("Searching by \"%s\":", colors.WriteBlue(search))) + "\n"
 	}
-	g.output += fmt.Sprintf("%3s | %8s | %50s | %10s\n", "ID", "STATUS", "CONTAINER NAME", "IP")
+	g.output += fmt.Sprintf("%3s | %8s | %50s | %10s\n", "ID", "STATUS", "CONTAINER NAME", "NETWORK : IP")
 	g.output += fmt.Sprintln(strings.Repeat("-", 90))
 
 	// Render the containers here
@@ -47,6 +47,9 @@ func (g *Gui) ListContainers(c []docker.Container, search string) {
 	}
 
 	g.output += fmt.Sprintln()
+	g.output += fmt.Sprintf("Type a number betweet %s to select a container.\n",
+		colors.WriteYellow(fmt.Sprintf("%d-%d", 0, len(c)-1)),
+	)
 	g.output += fmt.Sprintln("Type", colors.WriteYellow(ActionSearch), "to search.")
 	if search != "" {
 		g.output += fmt.Sprintln("Type", colors.WriteYellow(ActionClearSearch), "to clear the search.")
